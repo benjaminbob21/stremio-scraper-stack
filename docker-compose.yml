@@ -1,0 +1,50 @@
+version: "3.8"
+
+services:
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_HTML=false
+      - CAPTCHA_SOLVER=none
+      - TZ=UTC
+    ports:
+      - "8191:8191"
+    restart: unless-stopped
+
+  jackett:
+    image: lscr.io/linuxserver/jackett:latest
+    container_name: jackett
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=UTC
+      - AUTO_UPDATE=true
+    volumes:
+      - ./data/jackett/config:/config
+      - ./data/jackett/downloads:/downloads
+    ports:
+      - "9117:9117"
+    depends_on:
+      - flaresolverr
+    restart: unless-stopped
+
+  comet:
+    image: ghcr.io/g0ldyy/comet:latest
+    container_name: comet
+    environment:
+      - FASTAPI_HOST=0.0.0.0
+      - FASTAPI_PORT=8000
+      - ADDON_ID=org.comet.selfhosted
+      - ADDON_NAME=Comet Self-Hosted
+      # Jackett Integration
+      - SCRAPE_JACKETT=live
+      - JACKETT_URL=http://jackett:9117
+      - JACKETT_API_KEY=${JACKETT_API_KEY:-}
+      - JACKETT_INDEXERS=[]
+    ports:
+      - "8000:8000"
+    depends_on:
+      - jackett
+    restart: unless-stopped
