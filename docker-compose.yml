@@ -13,6 +13,15 @@ services:
       - "8191:8191"
     restart: unless-stopped
 
+  stremthru:
+    image: muniftanjim/stremthru:latest
+    container_name: stremthru
+    environment:
+      - PORT=8080
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
   jackett:
     image: lscr.io/linuxserver/jackett:latest
     container_name: jackett
@@ -38,6 +47,8 @@ services:
       - FASTAPI_PORT=8000
       - ADDON_ID=org.comet.selfhosted
       - ADDON_NAME=Comet Self-Hosted
+      - PUBLIC_BASE_URL=https://stockvm-594348.tailfd4d8c.ts.net:8443
+      - STREMTHRU_URL=http://stremthru:8080
       # Jackett Integration
       - SCRAPE_JACKETT=live
       - JACKETT_URL=http://jackett:9117
@@ -47,4 +58,5 @@ services:
       - "8000:8000"
     depends_on:
       - jackett
+      - stremthru
     restart: unless-stopped
